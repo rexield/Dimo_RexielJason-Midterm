@@ -1,49 +1,68 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-var app = {
-    // Application Constructor
-    initialize: function() {
-        this.bindEvents();
+let app= {
+    init:function(){
+        document.getElementById("battery").addEventListener("click", app.batteryStatus);
+        document.getElementById("location").addEventListener("click", app.getCurrentLocation);
+        document.getElementById("vibrate").addEventListener("click", app.vibrate);
+        document.getElementById("btn").addEventListener("click", app.takephoto); 
     },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
-        app.receivedEvent('deviceready');
-    },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
 
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
+    batteryStatus: function(){
+      window.addEventListener("batterystatus", app.onBatteryStatus, false);
+    },
 
-        console.log('Received Event: ' + id);
+    onBatteryStatus : function(info){
+         alert("Battery Status: Level: " + info.level + " \nisPlugged: " + info.isPlugged);
+    },
+
+	getCurrentLocation: function(){
+		var options = { enableHighAccuracy: true };
+		navigator.geolocation.getCurrentPosition(app.onSuccess, app.onError, options);
+	},
+	
+	onSuccess: function(position){
+	
+		var longitude = position.coords.longitude;
+		var latitude = position.coords.latitude;
+		var timestamp = new Date(position.timestamp);
+		
+		alert("Getting your current location \n" + 
+			" \nLongitude: " + longitude +
+			" \nLatitude: " + latitude +
+			" \nTimestamp: " + timestamp);         
+	},
+	
+	onError: function(error){
+		alert("Error: " + error.code +
+				" message:" + error.message);
+	},
+			
+       vibrate: function(){
+           navigator.vibrate([3000]);
+           alert("Vibrate in 3 seconds");
+    },
+        
+    takephoto: function(){
+    let opts={
+        quality: 80,
+        destinationType: Camera.DestinationType.FILE_URI,
+        sourceType: Camera.PictureSourceType.CAMERA,
+        mediaType: Camera.MediaType.PICTURE,
+        encodingType: Camera.EncodingType.JPEG,
+        cameraDirection: Camera.Direction.BACK,
+        targetWidth: 300,
+        targetHeight: 400
+        };
+        
+        navigator.camera.getPicture(app.success, app.failure, opts);
+    },
+
+    success: function(imgURI){
+        document.getElementById('msg').textContent = imgURI;
+        document.getElementById('photo').src = imgURI;
+    },
+
+    failure: function(msg){
+        document.getElementById('msg').textContent = msg;
     }
 };
+document.addEventListener('deviceready', app.init);
